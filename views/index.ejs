@@ -1,95 +1,180 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ADPanel</title>
     <link id="favicon" rel="icon" type="image/png" href="/images/adpanel-dark.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.7.2/css/all.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Bitcount:wght@100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/dashboard.css">
-    <style>
-      #splash-screen {
-        position: fixed;
-        top: 0; left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: url('https://files.catbox.moe/6yav8u.png') center/contain no-repeat;
-        background-color: #111;
-        background-size: cover;
-        z-index: 9999;
-        opacity: 1;
-        transition: opacity 1s ease;
-      }
-      #splash-screen.hidden {
-        opacity: 0;
-        pointer-events: none;
-      }
-
-      /* small style tweak so settings button doesn't overlay weirdly */
-      .server-box { position: relative; }
-      .settings {
-        position: absolute;
-        right: 12px;
-        top: 12px;
-        background: rgba(0,0,0,0.45);
-        border: none;
-        padding: 8px;
-        border-radius: 8px;
-        color: #fff;
-        cursor: pointer;
-      }
-    </style>
   </head>
   <body>
     <div id="splash-screen"></div>
 
-    <h1 class="title"><a href="/" style="text-decoration: none; color: white;">ADPanel</a></h1>
-
-    <form class="upload-form" action="/upload" method="POST" enctype="multipart/form-data">
-      <input type="file" name="file" accept=".zip" required>
-      <button class="upload">Upload ZIP</button>
-    </form>
-
-            </div>
-
-        <div class="pet"></div>
-        <div>
-          <a class="start">Let's get started</a>
+    <header class="top-bar">
+      <div class="brand">
+        <img src="/images/adpanel-white.png" alt="ADPanel logo" class="brand-logo">
+        <div class="brand-copy">
+          <h1 class="brand-title">ADPanel</h1>
+          <p class="brand-subtitle">Smart control for your Discord bots</p>
         </div>
-        <div>
-          <a class="start-description">Create your server</a>
-        </div>
-    </div>
+      </div>
 
-    <div class="list">
-      <% bots.forEach(function(bot){ %>
-        <div class="server-box" onclick="location.href='/bot/<%= bot %>'">
-          <div class="server-header">
-            <span class="server-icon" style="color: #b9bbbb;"><i class="fa-solid fa-server"></i></span>
-            <span class="server-name"><%= bot %></span>
-                  <% }) %>
+      <div class="toolbar">
+        <div class="upload-form">
+          <form action="/upload" method="POST" enctype="multipart/form-data" class="upload-form__form">
+            <label class="upload-form__label" for="uploadInput">
+              <i class="fa-solid fa-upload"></i>
+              <span>Upload ZIP</span>
+            </label>
+            <input id="uploadInput" type="file" name="file" accept=".zip" required>
+            <button type="submit" class="upload-form__submit">Deploy</button>
+          </form>
+        </div>
+
+        <div class="toolbar-actions">
+          <% if (isAdmin) { %>
+            <button class="icon-button" title="Settings" onclick="location.href='/settings'">
+              <i class="fa-solid fa-sliders"></i>
+            </button>
+          <% } else { %>
+            <button class="icon-button" title="You are not admin" disabled>
+              <i class="fa-solid fa-lock"></i>
+            </button>
+          <% } %>
+          <button id="logoutBtn" class="icon-button" title="Log Out">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="dashboard">
+      <section class="hero">
+        <div class="hero-copy">
+          <h2>Welcome back!</h2>
+          <p>Monitor, deploy, and orchestrate Discord bots with ease. Launch new experiences for your community in seconds.</p>
+
+          <div class="hero-actions">
+            <button class="pill" data-scroll-target="bots">View Bots</button>
+            <button class="pill pill--outline" data-scroll-target="upload">Quick Deploy</button>
           </div>
+        </div>
 
-<div>
-  <% if (isAdmin) { %>
-    <button class="settings" title="Settings" onclick="event.stopPropagation(); location.href='/settings'" style="background: none; border: none; padding: 0; cursor: pointer; background-color: #252733;">
-      <i class="fa-solid fa-square-sliders"></i>
-    </button>
-  <% } else { %>
-    <button class="settings" title="You are not admin" disabled style="background: none; border: none; padding: 0; cursor: not-allowed; opacity: 0.5; background-color: #252733;">
-      <i class="fa-solid fa-lock"></i>
-    </button>
-    <button id="logoutBtn" onclick="logoutBtn()" title="Log Out"><i class="fa-solid fa-right-from-bracket"></i></button>
-  <% } %>
-</div>
+        <div class="hero-stats">
+          <article class="stat-card">
+            <div class="stat-card__icon stat-card__icon--active">
+              <i class="fa-solid fa-robot"></i>
+            </div>
+            <div class="stat-card__content">
+              <p class="stat-card__label">Active bots</p>
+              <p class="stat-card__value"><%= bots.length %></p>
+            </div>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-card__icon stat-card__icon--uptime">
+              <i class="fa-solid fa-waveform"></i>
+            </div>
+            <div class="stat-card__content">
+              <p class="stat-card__label">Status</p>
+              <p class="stat-card__value">Operational</p>
+            </div>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-card__icon stat-card__icon--deploy">
+              <i class="fa-solid fa-rocket"></i>
+            </div>
+            <div class="stat-card__content">
+              <p class="stat-card__label">Quick actions</p>
+              <p class="stat-card__value">3 shortcuts</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="quick-actions" aria-label="Quick actions">
+        <h3>Quick actions</h3>
+        <div class="quick-actions__grid">
+          <button class="quick-action" onclick="document.querySelector('[data-scroll-target=\'bots\']').click()">
+            <i class="fa-solid fa-list-check"></i>
+            <span>Manage bots</span>
+          </button>
+          <button class="quick-action" onclick="document.querySelector('[data-scroll-target=\'upload\']').click()">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <span>Deploy update</span>
+          </button>
+          <button class="quick-action" onclick="window.open('https://discord.com/developers', '_blank')">
+            <i class="fa-brands fa-discord"></i>
+            <span>Discord portal</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="bots" id="bots">
+        <div class="section-heading">
+          <div>
+            <h3>Your bots</h3>
+            <p>Browse and jump straight into any bot workspace.</p>
+          </div>
+          <div class="section-actions">
+            <label for="searchBots" class="search-field">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input id="searchBots" type="text" placeholder="Search bots">
+            </label>
+          </div>
+        </div>
+
+        <div class="bot-grid" data-bot-grid>
+          <% bots.forEach(function(bot){ %>
+            <article class="bot-card" data-bot-card data-name="<%= bot.toLowerCase() %>" onclick="location.href='/bot/<%= bot %>'">
+              <div class="bot-card__icon">
+                <i class="fa-solid fa-server"></i>
+              </div>
+              <div class="bot-card__body">
+                <h4><%= bot %></h4>
+                <p>Manage configuration, logs and deployments.</p>
+              </div>
+              <i class="fa-solid fa-arrow-right bot-card__chevron"></i>
+            </article>
+          <% }) %>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer" id="upload">
+      <div class="footer-inner">
+        <div class="footer-copy">
+          <h3>Need to ship a new bot?</h3>
+          <p>Upload a ZIP package and ADPanel will take care of unpacking and launching it.</p>
+        </div>
+        <form class="footer-upload" action="/upload" method="POST" enctype="multipart/form-data">
+          <label class="footer-upload__label" for="footerUpload">
+            <i class="fa-solid fa-folder-open"></i>
+            <span>Select ZIP</span>
+          </label>
+          <input id="footerUpload" type="file" name="file" accept=".zip" required>
+          <button type="submit" class="footer-upload__submit">Upload &amp; Deploy</button>
+        </form>
+      </div>
+    </footer>
+
+    <template id="empty-state">
+      <div class="empty-state">
+        <i class="fa-solid fa-sparkles empty-state__icon"></i>
+        <h4>No bots found</h4>
+        <p>Try adjusting your search or deploy a new bot package.</p>
+      </div>
+    </template>
 
     <script>
       const darkFavicon = '/images/adpanel-white.png';
       const lightFavicon = '/images/adpanel-dark.png';
+
       function updateIcons() {
         const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]').forEach(el => el.remove());
@@ -99,43 +184,87 @@
         linkFavicon.href = isDark ? darkFavicon : lightFavicon;
         document.head.appendChild(linkFavicon);
       }
+
       updateIcons();
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateIcons);
 
       window.addEventListener('DOMContentLoaded', () => {
         const splash = document.getElementById('splash-screen');
         if (!localStorage.getItem('seenSplash')) {
-          const displayTime = 5000;
+          const displayTime = 3500;
           setTimeout(() => {
             splash.classList.add('hidden');
-            setTimeout(() => splash.remove(), 1000);
+            setTimeout(() => splash.remove(), 600);
           }, displayTime);
           localStorage.setItem('seenSplash', 'true');
         } else {
           splash.remove();
         }
+
+        document.querySelectorAll('[data-scroll-target]').forEach(button => {
+          button.addEventListener('click', () => {
+            const targetId = button.getAttribute('data-scroll-target');
+            const section = document.getElementById(targetId);
+            if (section) {
+              section.scrollIntoView({ behavior: 'smooth' });
+            }
+          });
+        });
+
+        const searchInput = document.getElementById('searchBots');
+        const botGrid = document.querySelector('[data-bot-grid]');
+        const emptyStateTemplate = document.getElementById('empty-state');
+
+        function updateBotVisibility() {
+          const term = searchInput.value.trim().toLowerCase();
+          const botCards = Array.from(botGrid.querySelectorAll('[data-bot-card]'));
+          let visibleCount = 0;
+
+          botCards.forEach(card => {
+            const name = card.getAttribute('data-name');
+            const matches = !term || name.includes(term);
+            card.classList.toggle('is-hidden', !matches);
+            if (matches) visibleCount += 1;
+          });
+
+          const existingEmptyState = botGrid.querySelector('.empty-state');
+          if (visibleCount === 0) {
+            if (!existingEmptyState) {
+              const clone = emptyStateTemplate.content.cloneNode(true);
+              botGrid.appendChild(clone);
+            }
+          } else if (existingEmptyState) {
+            existingEmptyState.remove();
+          }
+        }
+
+        searchInput.addEventListener('input', updateBotVisibility);
+        updateBotVisibility();
       });
 
-    function deleteAllClientCookies() {
-      const cookies = document.cookie.split("; ");
-      for (const cookie of cookies) {
-        const eqPos = cookie.indexOf("=");
-        const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+      function deleteAllClientCookies() {
+        const cookies = document.cookie.split('; ');
+        for (const cookie of cookies) {
+          const eqPos = cookie.indexOf('=');
+          const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+          document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+        }
       }
-    }
 
-    document.getElementById("logoutBtn").addEventListener("click", async () => {
-      try {
-        deleteAllClientCookies();
-        await fetch('/logout', { method: 'POST', credentials: 'include' });
-        location.href = '/login';
-      } catch (err) {
-        console.error(err);
-        alert('Failed to log out');
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', async (event) => {
+          event.preventDefault();
+          try {
+            deleteAllClientCookies();
+            await fetch('/logout', { method: 'POST', credentials: 'include' });
+            location.href = '/login';
+          } catch (err) {
+            console.error(err);
+            alert('Failed to log out');
+          }
+        });
       }
-    });
     </script>
-
   </body>
 </html>
